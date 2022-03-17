@@ -8,8 +8,6 @@ const pool = new Pool({
   host: 'localhost',
   database: 'lightbnb'
 });
-// the following assumes that you named your connection variable `pool`
-pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
 
 /// Users
 
@@ -18,18 +16,37 @@ pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.l
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
-}
+// const getUserWithEmail = function(email) {
+//   let user;
+//   for (const userId in users) {
+//     user = users[userId];
+//     if (user.email.toLowerCase() === email.toLowerCase()) {
+//       break;
+//     } else {
+//       user = null;
+//     }
+//   }
+//   return Promise.resolve(user);
+// }
+// tristanjacobs@gmail.com
+const getUserWithEmail = (email) => {
+  return pool
+    .query(`SELECT * FROM users WHERE users.email = $1`, [email])
+    .then((result) => {
+      // console.log("email::", email);
+      // console.log("result.rows::", result.rows[0].email);
+      if (email === result.rows[0].email) {
+        console.log("emails match!");
+        return result.rows[0];
+      } else {
+        user = null;
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
+
 exports.getUserWithEmail = getUserWithEmail;
 
 /**
@@ -76,13 +93,19 @@ exports.getAllReservations = getAllReservations;
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function(options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
-}
+//<><> return pool AND return result.rows!!
+ const getAllProperties = (options, limit = 10) => {
+  return pool
+    .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    .then((result) => {
+      console.log(result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
+
 exports.getAllProperties = getAllProperties;
 
 
