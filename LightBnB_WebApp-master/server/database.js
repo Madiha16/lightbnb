@@ -155,10 +155,66 @@ exports.addUser = addUser;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
-}
+// const getAllReservations = function(guest_id, limit = 10) {
+//   return getAllProperties(null, 2);
+// }
+//  id: 17, name: 'Devin Sanders', email: 'tristanjacobs@gmail.com',
+const getAllReservations = (guest_id, limit = 10) => {
+  return pool
+    .query(`SELECT thumbnail_photo_url, title, number_of_bedrooms, number_of_bathrooms, start_date, end_date, avg(rating) as average_rating, cost_per_night
+    FROM reservations
+    JOIN properties ON reservations.property_id = properties.id
+    JOIN property_reviews ON properties.id = property_reviews.property_id
+    WHERE reservations.guest_id = $1
+    GROUP BY properties.id, reservations.id
+    ORDER BY reservations.start_date
+    LIMIT 10;`, [guest_id])
+    .then((result) => {
+      // console.log("result::", result); // big huge obj
+      // console.log("guest_id::", guest_id);// 17
+      console.log("result.rows::", result.rows); // the array of reservations as objects!
+      return result.rows;
+      // if (id === result.rows[0].id) {
+      //   console.log("id's match!");
+      //   return result.rows[0];
+      // } else {
+      //   user = null;
+      // }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
 exports.getAllReservations = getAllReservations;
+// result.rows gives back an array of all the reservations with all the selected columns and their values
+//
+// Update the getAllReservations function to use the lightbnb database to return reservations associated with a specific user.
+
+// This function accepts a guest_id, limits the properties to 10 and returns a promise. The promise should resolve reservations for that user.
+
+// Tip: Copy the query you built in LightBnB Select to use as a starting point, but alter it so
+// that all necessary data is returned to render reservations correctly on the front end.
+//
+// SELECT title, number_of_bedrooms, number_of_bathrooms, start_date, end_date, avg(rating) as average_rating, cost_per_night
+// FROM reservations
+// JOIN properties ON reservations.property_id = properties.id
+// JOIN property_reviews ON properties.id = property_reviews.property_id
+// WHERE reservations.guest_id = ${guest_id}
+// // GROUP BY properties.id, reservations.id
+// // ORDER BY reservations.start_date
+// LIMIT 10;
+
+// THREE DIFFERENT TABLES properties, reservations, property_reviews
+// title (from properties)
+// number_of_bedrooms (from properties)
+// number_of_bathrooms (from properties)
+// start_date - end_date (from reservations)
+// avg(rating) (from property_reviews)
+// cost_per_night (from properties)
+
+// Tip: Recall that if you're building a query that uses multiple tables, you can select all the rows on a specific table with this:
+
+// SELECT table_name.*
 
 /// Properties
 
