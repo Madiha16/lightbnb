@@ -46,7 +46,6 @@ const getUserWithEmail = (email) => {
       console.log(err.message);
     });
 };
-
 exports.getUserWithEmail = getUserWithEmail;
 
 /**
@@ -54,10 +53,50 @@ exports.getUserWithEmail = getUserWithEmail;
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
-}
+// const getUserWithId = function(id) {
+//   return Promise.resolve(users[id]);
+// }
+// tristanjacobs@gmail.com
+const getUserWithId = (id) => {
+  return pool
+    .query(`SELECT * FROM users WHERE id = $1`, [id])
+    .then((result) => {
+      console.log("id::", id);
+      console.log("result::", result);
+      console.log("result.rows[0].id::", result.rows[0].id);
+      if (id === result.rows[0].id) {
+        console.log("id's match!");
+        return result.rows[0];
+      } else {
+        user = null;
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
 exports.getUserWithId = getUserWithId;
+// id:: 17
+
+// result:: Result {
+//   command: 'SELECT',
+//   rowCount: 1,
+//   oid: null,
+//   rows: [
+//     {
+//       id: 17,
+//       name: 'Devin Sanders',
+//       email: 'tristanjacobs@gmail.com',
+//       password: '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'
+//     }
+//   ],
+//   fields: [ ... etc
+// .
+// .
+// . etc... result is a huge object, result.rows is an array of 1 element, so index of 0, result.rows[0] gives back just the object
+// and u can dot into its's properties result.rows[0].id = 17 (id, name, email, password all columns of the users table! (id auto generated when added in table)
+
+//     result.rows[0].id:: 17
 
 
 /**
@@ -65,13 +104,49 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
-}
+// const addUser =  function(user) {
+//   const userId = Object.keys(users).length + 1;
+//   user.id = userId;
+//   users[userId] = user;
+//   return Promise.resolve(user);
+// }
+const addUser = (user) => {
+  return pool
+    .query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *;`, [user.name, user.email, user.password])
+    .then((result) => {
+      console.log("user::", user);
+      console.log("result::", result);
+      console.log("result.rows[0]::", result.rows[0]);
+      // if (id === result.rows[0].id) {
+      //   console.log("id's match!");
+      //   return result.rows[0];
+      // } else {
+      //   user = null;
+      // }
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
 exports.addUser = addUser;
+// listening on port 3000 😎
+// user:: [Object: null prototype] {
+//   name: 'Madi',
+//   email: 'madiha1987@gmail.com',
+//   password: '$2b$12$qC4qv6TyKcQXGaqpdQiCT.5b35V.fQAtnnqobCXWyvfuIs5wgqYpK'
+// }
+// result:: Result {
+//   command: 'INSERT',
+//   rowCount: 1,
+//   oid: 0,
+//   rows: [
+//     {
+//       id: 1017,
+//       name: 'Madi',
+//       email: 'madiha1987@gmail.com',
+//       password: '$2b$12$qC4qv6TyKcQXGaqpdQiCT.5b35V.fQAtnnqobCXWyvfuIs5wgqYpK'
+//     }
+//   ],
 
 /// Reservations
 
